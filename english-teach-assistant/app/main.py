@@ -1,12 +1,10 @@
 from fastapi import FastAPI
+from app.user用户模块.route import router as user_router
 
-from app.api路由分发层.v1.endpoints import user
-from app.api路由分发层.v1.endpoints import items
 
 app = FastAPI()
 
-app.include_router(user.router,prefix="/api/v1/users",tags=["users"])
-app.include_router(items.router,prefix="/api/v1/items",tags=["items"])
+app.include_router(user_router,prefix="/api/v1/users",tags=["users"])
 
 if __name__ == "__main__":
     import uvicorn
