@@ -127,7 +127,8 @@ async def run():
             result = await session.call_tool("tool_name",arguments={})
 
 
+import asyncio
 if __name__ == "__main__":
-    import asyncio
+
     asyncio.run(run())
     # chat_loop()  # Uncomment to run the chat loop directly without MCP client session`
