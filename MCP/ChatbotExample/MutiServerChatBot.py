@@ -4,11 +4,12 @@ from pyexpat.errors import messages
 from typing import List, Dict, Any
 from mcp import ClientSession,StdioServerParameters,stdio_client
 from anthropic import Anthropic
-
+from pydantic import BaseModel
 from mcp_client import server_params
 
 
-class ToolDefinition:
+
+class ToolDefinition(BaseModel):
     name:str
     description:str
     input_schema:dict
@@ -115,12 +116,11 @@ class MultiServerChatBot:
             response = await session.list_tools()
             tools = response.tools
             for tool in tools:
+                print("tool.name:", tool.name, type(tool.name))
+                print("tool.description:", tool.description, type(tool.description))
+                print("tool.inputSchema:", tool.inputSchema, type(tool.inputSchema))
                 self.sessions_mapping_toolName[tool.name] = session
-                self.available_tools.append({
-                    "name": tool.name,
-                    "description": tool.description,
-                    "input_schema": tool.inputSchema
-                })
+                self.available_tools.append(ToolDefinition(name=tool.name, description=tool.description, input_schema=tool.inputSchema))
         except Exception as e:
             print(f"Failed to connect to server {server_name}: {e}")
 
