@@ -6,7 +6,7 @@ import os
 
 mcp = FastMCP("research")
 
-paper_dir = "papers"
+paper_dir = "../papers"
 
 @mcp.tool()
 def search_papers(topic: str, max_results: int = 5) -> List[str]:
