@@ -5,7 +5,7 @@ from anthropic import Anthropic  # Assuming Anthropic is a class that handles th
 from mcp_client import StdioServerParameters,stdio_client,ClientSession
 
 
-class ChatBot:
+class ChatBotP1:
     def __init__(self):
         self.name = "ChatBot P1"
         self.version = "1.0"
@@ -102,5 +102,5 @@ class ChatBot:
 
 import asyncio
 if __name__ == "__main__":
-    chatbot = ChatBot()
+    chatbot = ChatBotP1()
     asyncio.run(chatbot.connect_to_server_and_run())
