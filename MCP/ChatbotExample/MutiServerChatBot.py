@@ -102,7 +102,7 @@ class MultiServerChatBot:
         """connect to a server and store the session"""
 
         try:
-            server_params = StdioServerParameters(server_config)
+            server_params = StdioServerParameters(**server_config)
             stdio_transport = await self.exit_stack.enter_async_context(
                 stdio_client(server_params)
             )
@@ -114,6 +114,7 @@ class MultiServerChatBot:
             self.sessions.append(session)
 
             response = await session.list_tools()
+            session.list_prompts()  # Assuming this is needed to initialize prompts
             tools = response.tools
             for tool in tools:
                 print("tool.name:", tool.name, type(tool.name))
