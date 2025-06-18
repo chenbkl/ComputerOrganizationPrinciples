@@ -23,7 +23,6 @@ class MultiServerChatBot:
 
         self.llm = Anthropic()
         self.available_tools:List[ToolDefinition] = []
-        self.sessions:List[ClientSession] = []  # Store sessions for different servers
         self.sessions_mapping_toolName:Dict[str, ClientSession] = {}  # Store sessions for different servers
         self.exit_stack = AsyncExitStack()
 
@@ -111,7 +110,6 @@ class MultiServerChatBot:
                 ClientSession(reader, writer)
             )
             await session.initialize()
-            self.sessions.append(session)
 
             response = await session.list_tools()
             session.list_prompts()  # Assuming this is needed to initialize prompts
