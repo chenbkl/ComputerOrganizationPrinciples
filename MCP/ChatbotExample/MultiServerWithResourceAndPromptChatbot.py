@@ -199,7 +199,7 @@ class MultiServerWithResourceAndPromptChatbot(object):
         await self.async_exit_stack.aclose()
         print("All sessions closed and resources cleaned up.")
 
-    async def main():
+    async def main(self):
         chatbot = MultiServerWithResourceAndPromptChatbot()
         try:
             await chatbot.connect_to_servers()

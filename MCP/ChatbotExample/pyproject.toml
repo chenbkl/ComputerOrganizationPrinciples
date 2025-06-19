@@ -8,4 +8,5 @@ dependencies = [
     "anthropic>=0.54.0",
     "arxiv>=2.2.0",
     "mcp>=1.9.3",
+    "mypy>=1.16.1",
 ]

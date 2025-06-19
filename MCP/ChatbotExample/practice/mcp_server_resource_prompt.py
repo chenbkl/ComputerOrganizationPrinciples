@@ -118,7 +118,7 @@ def get_available_folders() -> str:
     return content
 
 
-@mcp.resource("papers://{topic}")
+@mcp.resource("papers://{topic}",type='markdown')
 def get_topic_papers(topic: str) -> str:
     """
     Get detailed information about papers on a specific topic.
