@@ -191,6 +191,7 @@ class MultiServerWithResourceAndPromptChatbot(object):
                 await self.process_query(query)
             except Exception as e:
                 print(f"An error occurred: {e}")
+
     async def clean_up(self):
         """
         Cleans up resources and closes all sessions.
@@ -253,6 +254,7 @@ class MultiServerWithResourceAndPromptChatbot(object):
                     )
                     self.available_tools.append(tool_definition)
                     self.sessions_mapping_resourceOrToolName[tool.name] = session
+
                 # list available prompts from the server
                 prompt_responses = await session.list_prompts()
                 if prompt_responses and prompt_responses.prompts:
