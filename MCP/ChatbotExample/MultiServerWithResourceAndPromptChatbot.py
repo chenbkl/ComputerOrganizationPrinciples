@@ -331,11 +331,12 @@ class MultiServerWithResourceAndPromptChatbot(object):
                 if prompt_responses and prompt_responses.prompts:
                     for prompt in prompt_responses.prompts:
                         self.sessions_mapping_resourceOrToolName[prompt.name] = session
-                        self.available_prompts.append({
-                            "name": prompt.name,
-                            "description": prompt.description,
-                            "arguments": prompt.arguments,
-                        })
+                        # self.available_prompts.append({
+                        #     "name": prompt.name,
+                        #     "description": prompt.description,
+                        #     "arguments": prompt.arguments,
+                        # })
+                        self.available_prompts.append(vars(prompt))
 
                 # list available resources from the server
                 resource_responses = await session.list_resources()
