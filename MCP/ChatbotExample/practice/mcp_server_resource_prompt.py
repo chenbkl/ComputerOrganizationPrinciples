@@ -3,6 +3,7 @@ from typing import List
 import json
 from mcp.server.fastmcp import FastMCP
 import os
+from pydantic import BaseModel
 
 mcp = FastMCP("research")
 
