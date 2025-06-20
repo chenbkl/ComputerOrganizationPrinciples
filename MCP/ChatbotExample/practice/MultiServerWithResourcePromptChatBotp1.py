@@ -229,8 +229,8 @@ class MultiServerWithResourcePromptChatBotP1:
 
 
 async def main():
+    chatbot = MultiServerWithResourcePromptChatBotP1(server=None)
     try:
-        chatbot = MultiServerWithResourcePromptChatBotP1(server=None)
         await chatbot.connect_to_servers()
         await chatbot.chat_loop()
     except Exception as e:
