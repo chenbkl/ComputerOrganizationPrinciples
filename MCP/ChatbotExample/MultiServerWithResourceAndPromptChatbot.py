@@ -63,8 +63,7 @@ class MultiServerWithResourceAndPromptChatbot(object):
             return
 
         try:
-            resource_uri = TypeAdapter(AnyUrl).validate_python(resource_uri)
-            result = await session.read_resource(resource_uri)
+            result = await session.read_resource(AnyUrl(resource_uri))
             if result and result.contents:
                 print(f"\nResource:{resource_uri}\n")
                 print(f"Contents:{result.contents[0].text}")
@@ -257,38 +256,6 @@ class MultiServerWithResourceAndPromptChatbot(object):
         await self.async_exit_stack.aclose()
         print("All sessions closed and resources cleaned up.")
 
-    async def main(self):
-        chatbot = MultiServerWithResourceAndPromptChatbot()
-        try:
-            await chatbot.connect_to_servers()
-            await chatbot.chat_loop_new()
-        except Exception as e:
-            print(f"An error occurred: {e}")
-        finally:
-            await chatbot.clean_up()
-            print("Chatbot session ended.")
-
-# if __name__ == "__main__":
-#     asyncio.run(main())
-
-
-    async def chat_loop(self):
-        """
-        This method starts the chat loop, allowing the user to interact with the chatbot.
-        It continuously prompts for user input and processes the queries until the user decides to exit.
-        """
-        print("Welcome to the MultiServerWithResourceAndPromptChatbot!")
-        print("Type 'exit' to quit.")
-
-        while True:
-            query = input("You: ")
-            if query.lower() == 'exit':
-                break
-            try:
-                response = await self.process_query(query)
-                print(f"Bot: {response}")
-            except Exception as e:
-                print(f"Error: {e}")
 
     """
     函数名： connect_to_single_server
@@ -311,12 +278,11 @@ class MultiServerWithResourceAndPromptChatbot(object):
             parameters = StdioServerParameters(**server_config)
             (read, write) = await self.async_exit_stack.enter_async_context(stdio_client(parameters))
             session = await self.async_exit_stack.enter_async_context(ClientSession(read, write))
-            self.sessions.append(session)
             await session.initialize()
 
             try:
                 # list available tools from the server
-                tools_responses = await session.get_tools()
+                tools_responses = await session.list_tools()
                 for tool in tools_responses.tools:
                     tool_definition = ToolDefinition(
                         name=tool.name,
