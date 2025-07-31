@@ -1,0 +1,1 @@
+{"window_t": 0.1, "n_fft": 512, "hop_t": 0.05, "vectorizer": 2, "sample_rate": 16000, "buffer_t": 1.5, "use_delta": false, "sample_depth": 2, "n_mfcc": 13, "n_filt": 20}
