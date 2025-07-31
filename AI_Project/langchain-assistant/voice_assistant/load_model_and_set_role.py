@@ -29,7 +29,7 @@ chat_prompt = ChatPromptTemplate.from_messages(system_templates+[human_template]
 chain =  chat_prompt | llm
 
 # 测试输入
-question = "我锅上炖了排骨，1分钟后提醒我"
+question = "我火上炖了排骨，1分钟后提醒我"
 
 
 response = chain.invoke({"question":question})
