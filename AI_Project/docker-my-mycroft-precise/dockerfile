@@ -1,5 +1,7 @@
 # ——— 使用带 glibc 的 ARM64 Debian 作为基础镜像 ———
-FROM arm64v8/debian:stable-slim
+FROM --platform=linux/arm64 debian:stable-slim
+
+
 
 # 安装运行时依赖：PortAudio、ALSA、数学库等
 RUN apt-get update && \
@@ -14,7 +16,8 @@ WORKDIR /opt/precise
 
 # 把本地的 precise-engine 和模型文件复制进来
 COPY precise-engine /opt/precise/precise-engine
-COPY your_model.pb  /opt/precise/your_model.pb
+COPY mike-test.pb  /opt/precise/mike-test.pb
+COPY mike-test.pb.params  /opt/precise/mike-test.pb.params
 
 # 确保可执行权限
 RUN chmod +x /opt/precise/precise-engine
@@ -26,4 +29,4 @@ RUN chmod +x /opt/precise/precise-engine
 #     rm -rf /root/.cache/pip
 
 # 启动命令：直接运行二进制监听唤醒词
-ENTRYPOINT ["/opt/precise/precise-engine", "--model", "/opt/precise/your_model.pb", "--threshold", "0.5"]
+ENTRYPOINT ["/opt/precise/precise-engine/precise-engine", "/opt/precise/mike-test.pb"]
