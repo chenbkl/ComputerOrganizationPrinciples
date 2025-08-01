@@ -9,6 +9,9 @@ dependencies = [
     "langchain>=0.3.27",
     "langchain-community>=0.3.27",
     "langchain-ollama>=0.3.6",
+    "mycroft-precise>=0.1.1",
+    "precise-runner>=0.3.1",
     "pyaudio>=0.2.14",
     "python-dotenv>=1.1.1",
+    "sounddevice>=0.5.2",
 ]

@@ -4,29 +4,33 @@ FROM --platform=linux/arm64 debian:stable-slim
 
 
 # 安装运行时依赖：PortAudio、ALSA、数学库等
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      libatlas-base-dev \
-      portaudio19-dev \
-      alsa-utils \
-    && rm -rf /var/lib/apt/lists/*
+# 安装 Python 和 pip 及其他依赖（如 build-essential 和 libssl-dev）
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-pip python3-dev python3-venv \
+    build-essential \
+    portaudio19-dev libasound2-dev \
+  && rm -rf /var/lib/apt/lists/*
 
+# 创建一个虚拟环境
+RUN python3 -m venv /opt/precise/venv
+
+# 设置虚拟环境的路径
+ENV PATH="/opt/precise/venv/bin:$PATH"
 # 创建工作目录
 WORKDIR /opt/precise
 
 # 把本地的 precise-engine 和模型文件复制进来
-COPY precise-engine /opt/precise/precise-engine
-COPY mike-test.pb  /opt/precise/mike-test.pb
-COPY mike-test.pb.params  /opt/precise/mike-test.pb.params
+COPY . /opt/precise/
+
 
 # 确保可执行权限
-RUN chmod +x /opt/precise/precise-engine
+RUN chmod +x /opt/precise/pipestream.py
 
-# （可选）如果你需要 Python wrapper，取消下面注释并安装
-# RUN apt-get update && \
-#     apt-get install -y python3-pip && \
-#     pip3 install --no-cache-dir mycroft-precise && \
-#     rm -rf /root/.cache/pip
+# 安装 Python 项目的依赖
+RUN pip3 install --no-cache-dir -r /opt/precise/requirements.txt
 
 # 启动命令：直接运行二进制监听唤醒词
-ENTRYPOINT ["/opt/precise/precise-engine/precise-engine", "/opt/precise/mike-test.pb"]
+# ENTRYPOINT ["/opt/precise/precise-engine/precise-engine", "/opt/precise/mike-test.pb"]
+ENTRYPOINT ["python3", "/opt/precise/pipestream.py"]
+# CMD：提供一个默认的管道路径，如果 docker run 后面不加参数，就读 /tmp/pipe
+CMD ["/tmp/pipe"]
