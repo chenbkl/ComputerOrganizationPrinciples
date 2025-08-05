@@ -91,9 +91,17 @@ def monitor_container_logs(container_name):
 
 # 3. 录音并传输音频数据到管道
 def process_audio(audio_data):
-    with open(pipe_name, 'wb') as pipe:
-        pipe.write(audio_data.tobytes())
-        print(f"音频数据写入管道：{len(audio_data)} 字节")
+    # 打印音频数据的一些统计量
+    print(
+        f"[录音] 均值: {audio_data.mean():.5f}, "
+        f"最大值: {audio_data.max():.5f}, "
+        f"最小值: {audio_data.min():.5f}, "
+        f"数据形状: {audio_data.shape}"
+    )
+    # with open(pipe_name, 'wb') as pipe:
+    #     pipe.write(audio_data.tobytes())
+    #     print(f"音频数据写入管道：{len(audio_data)} 帧, {audio_data.nbytes} 字节")
+
 
 def callback(indata, frames, time, status):
     if status:
@@ -102,16 +110,16 @@ def callback(indata, frames, time, status):
 
 # 4. 启动录音并自动传输数据
 def start_recording():
-    with sd.InputStream(callback=callback, channels=1, samplerate=sample_rate):
+    with sd.InputStream(callback=callback, channels=1, samplerate=sample_rate,blocksize=1024):
         print("录音中... 按Ctrl+C退出")
         while True:
             time.sleep(0.1)  # 程序持续运行，避免 CPU 占用过高
 
 # 运行自动化流程
 def main():
-    create_pipe()  # 创建管道
+    # create_pipe()  # 创建管道
     start_recording()  # 启动录音并传输音频数据
-    start_docker_container()  # 启动 Docker 容器
+    # start_docker_container()  # 启动 Docker 容器
 
 if __name__ == "__main__":
     main()

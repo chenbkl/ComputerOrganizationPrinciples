@@ -37,6 +37,7 @@ class PipeStream:
         # 返回所需大小的数据
         chunk = self.buffer[:n]
         self.buffer = self.buffer[n:]
+        print(f"正在从指定管道{self.pipe_name}读取数据...,数据长度为 {len(chunk)}")
         return chunk
 
     def write(self, s):
@@ -66,3 +67,4 @@ def on_activation():
 runner = PreciseRunner(engine, stream=stream, on_activation=on_activation)
 # 启动唤醒词检测
 runner.start()
+print("PreciseRunner开始启动")
