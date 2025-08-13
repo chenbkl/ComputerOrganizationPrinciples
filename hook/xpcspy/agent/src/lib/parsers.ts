@@ -1,11 +1,14 @@
 import { IParsingResult, SupportedBPListFormat } from '../lib/interfaces';
 import { objcObjectDebugDesc } from '../lib/helpers';
-import { xpcGetType, 
-        xpcDictionaryApply,
-        __CFBinaryPlistCreate15, 
-        xpcDataGetBytesPtr,
-        xpcDataGetLength} from '../lib/systemFunctions';
-import { resourceLimits } from 'worker_threads';
+import {
+    xpcGetType,
+    xpcDictionaryApply,
+    __CFBinaryPlistCreate15,
+    xpcDataGetBytesPtr,
+    xpcDataGetLength
+} from '../lib/systemFunctions';
+// import { resourceLimits } from 'worker_threads';
+import ObjC from 'frida-objc-bridge';
 
 export function parseBPListKeysRecursively(
     connection: NativePointer,
@@ -19,7 +22,7 @@ export function parseBPListKeysRecursively(
     /**
      * See: https://developer.apple.com/documentation/xpc/1505404-xpc_dictionary_apply?language=objc
      */
-    const block_impl = function(key: NativePointer, value: NativePointer): boolean {
+    const block_impl = function (key: NativePointer, value: NativePointer): boolean {
         const valueType = objcObjectDebugDesc(<NativePointer>xpcGetType.call(value));
         switch (valueType) {
             case 'OS_xpc_dictionary':

@@ -8,5 +8,12 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@types/frida-gum": "^19.0.1",
+    "@types/node": "^24.2.1"
+  },
+  "dependencies": {
+    "frida-objc-bridge": "^8.0.5"
+  }
 }
