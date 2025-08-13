@@ -1,0 +1,19 @@
+{
+  "name": "xpcspy",
+  "version": "1.0.0",
+  "description": "## Features: * Bidirectional XPC message interception. * iOS and macOS support. * `bplist00`, and the infamous `bplist15` [deserialization]. * Filter by message direction (incoming or outgoing) and service name. * More to come?",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/frida-gum": "^19.0.1",
+    "@types/node": "^24.2.1"
+  },
+  "dependencies": {
+    "frida-objc-bridge": "^8.0.5"
+  }
+}
