@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>__kIMRemoteObjectsCodingClassKey</key>
+	<string>IMMessageItem</string>
+	<key>account</key>
+	<string>e:296776627@qq.com</string>
+	<key>accountID</key>
+	<string>0CC4F0E1-38E9-4897-BDBC-32D4ADF61175</string>
+	<key>bodyData</key>
+	<data>
+	BAtzdHJlYW10eXBlZIHoA4QBQISEhBlOU011dGFibGVBdHRyaWJ1dGVkU3RyaW5nAISE
+	Ek5TQXR0cmlidXRlZFN0cmluZwCEhAhOU09iamVjdACFkoSEhA9OU011dGFibGVTdHJp
+	bmcBhIQITlNTdHJpbmcBlYQBKwdBYmRyaGhohoQCaUkBB5KEhIQMTlNEaWN0aW9uYXJ5
+	AJWEAWkBkoSYmB1fX2tJTU1lc3NhZ2VQYXJ0QXR0cmlidXRlTmFtZYaShISECE5TTnVt
+	YmVyAISEB05TVmFsdWUAlYQBKoSbmwCGhoY=
+	</data>
+	<key>ckSyncState</key>
+	<integer>0</integer>
+	<key>flags</key>
+	<integer>1048581</integer>
+	<key>guid</key>
+	<string>A9F25FAC-F775-4BDA-8AE5-5ADAEB5BC061</string>
+	<key>messageID</key>
+	<integer>0</integer>
+	<key>messageSummaryInfo</key>
+	<dict/>
+	<key>replyToGUID</key>
+	<string>B0EFFCC1-A3FA-4189-8106-128AC554CFCE</string>
+	<key>senderInfo</key>
+	<dict>
+		<key>FZPersonID</key>
+		<string>e:296776627@qq.com</string>
+	</dict>
+	<key>service</key>
+	<string>iMessage</string>
+	<key>sortID</key>
+	<integer>0</integer>
+	<key>time</key>
+	<real>776834409.072932</real>
+	<key>type</key>
+	<integer>0</integer>
+</dict>
+</plist>
