@@ -5,8 +5,12 @@ setImmediate(function () {
     // === 配置区 ===
     const PARENT_CLASS = 'APSCourier';
     const PARENT_SEL = '- _sendOutgoingMessage:';
-    // 最大抓取深度：根（userInfo）记为 0 层，直接子调用为 1 层
+    // 最大抓取深度：根（parent）记为 0 层，直接子调用为 1 层
     const MAX_DEPTH = 5;
+    // ▶▶ 新增：是否实时打印每个子调用（带缩进）
+    const PRINT_LIVE = true;
+    // ▶▶ 新增：缩进单位（两个空格；你也可以换成 '│  ' 或 '\t'）
+    const INDENT_UNIT = '  ';
     // 噪声过滤
     const NOISY_EXACT = new Set([
         'retain', 'release', 'autorelease', 'dealloc', '.cxx_destruct',
@@ -15,7 +19,7 @@ setImmediate(function () {
         'alloc'
     ]);
     const NOISY_PREFIX = ['init', 'copy', 'mutableCopy'];
-    // 每个窗口最多记录多少节点（0 表示不限制，避免爆量）
+    // 每个窗口最多记录多少节点（0 表示不限制）
     const MAX_NODES_PER_WINDOW = 0;
     function isNoisy(sel) {
         if (NOISY_EXACT.has(sel))
@@ -129,6 +133,13 @@ setImmediate(function () {
                 catch { }
                 const sig = `${cls} ${sel}${isSuper ? ' [super]' : ''}`;
                 const node = { sig, children: [] };
+                // ▶▶ 新增：实时打印带缩进的子调用
+                if (PRINT_LIVE) {
+                    // 根（parent）深度视作 0，当前子调用的缩进 = 当前父栈深度 - 1
+                    const liveDepth = Math.max(0, st.stack.length - 1);
+                    const indent = INDENT_UNIT.repeat(liveDepth);
+                    console.log(`${indent}${sig}`);
+                }
                 // 挂到当前父节点
                 const parent = st.stack[st.stack.length - 1];
                 if (parent)
@@ -154,7 +165,7 @@ setImmediate(function () {
     }
     console.log(`Ready: will build ObjC call tree up to depth=${MAX_DEPTH} during the parent window.`);
 });
-// ===== SEL -> string（沿用你的实现） =====
+// ===== SEL -> string =====
 function selToString(sel) {
     if (!sel || sel.isNull())
         return '<nil>';
