@@ -1,6 +1,7 @@
 "use strict";
 /// <reference types="frida-gum" />
 /// <reference types="./types/frida-objc.d.ts" />
+Object.defineProperty(exports, "__esModule", { value: true });
 setImmediate(function () {
     /**
      * 作用：在“父方法”执行窗口内，仅记录其“直接子调用”（深度=1）的 ObjC 方法，

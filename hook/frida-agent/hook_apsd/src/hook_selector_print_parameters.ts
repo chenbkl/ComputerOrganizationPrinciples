@@ -1,8 +1,8 @@
 /// <reference types="frida-gum" />
 /// <reference path="./types/frida-objc.d.ts" />
 
-const CLASS = 'APSOutgoingMessage';
-const SEL   = '- userInfo';
+const CLASS = 'APSCourierConnection';
+const SEL   = '- sendMessageWithTopicHash:identifier:payload:token:isPlistFormat:lastRTT:onInterface:';
 
 // —— 线程内重入保护（避免 description/JSON 内部再次触发本方法）——
 type Tid = ThreadId | number;

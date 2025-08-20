@@ -1,8 +1,8 @@
 "use strict";
 /// <reference types="frida-gum" />
 /// <reference path="./types/frida-objc.d.ts" />
-const CLASS = 'APSOutgoingMessage';
-const SEL = '- userInfo';
+const CLASS = 'APSCourierConnection';
+const SEL = '- sendMessageWithTopicHash:identifier:payload:token:isPlistFormat:lastRTT:onInterface:';
 const printingDepth = new Map();
 function enterPrinting(tid) {
     const d = (printingDepth.get(tid) ?? 0) + 1;
