@@ -1,0 +1,19 @@
+Metadata-Version: 2.4
+Name: objtree
+Version: 0.5.2
+Summary: tree but for Objective-C messages
+Home-page: https://github.com/hot3eed/objtree
+Author: hot3eed
+Author-email: hot3eed@gmail.com
+License: Apache License 2.0
+Keywords: dynamic-instrumentation ios macos frida debugger
+License-File: LICENSE
+Requires-Dist: frida-tools==14.4.5
+Dynamic: author
+Dynamic: author-email
+Dynamic: home-page
+Dynamic: keywords
+Dynamic: license
+Dynamic: license-file
+Dynamic: requires-dist
+Dynamic: summary
