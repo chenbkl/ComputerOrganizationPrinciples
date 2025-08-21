@@ -1,4 +1,5 @@
-/// <reference types="frida-gum" />
+// types/frida-objc.d.ts
+
 export {};
 
 declare global {
@@ -7,12 +8,26 @@ declare global {
   interface ObjCClass {
     $className: string;
     $ownMethods: string[];
-    [selector: string]: ObjCMethod | any; // 允许 C['- foo:'] / C['+ bar:']
+    [selector: string]: ObjCMethod | any;
   }
+
+  // 关键：既可调用又可用 new
+  interface ObjCObjectCtor {
+    (ptr: NativePointer): ObjCObject;      // callable
+    new (ptr: NativePointer): ObjCObject;  // newable
+  }
+
   const ObjC: {
     available: boolean;
     classes: Record<string, ObjCClass>;
-    Object: { new (ptr: NativePointer): ObjCObject };
+    Object: ObjCObjectCtor;                // 用上面的 ctor 类型
     selectorAsString?: (sel: NativePointer) => string;
   };
+
+  // （可选）如果你喜欢在“类型位”写 ObjC.Object / ObjC.Method：
+  namespace ObjC {
+    type Object = ObjCObject;
+    type Method = ObjCMethod;
+    type Class  = ObjCClass;
+  }
 }
