@@ -1,10 +1,12 @@
 /// <reference types="frida-gum" />
-/// <reference types="./types/frida-objc.d.ts" />
+import ObjC from "frida-objc-bridge";
+
+
 
 setImmediate(function () {
   // === 配置区 ===
   const PARENT_CLASS = 'APSCourier';
-  const PARENT_SEL   = '- _sendOutgoingMessage:';
+  const PARENT_SEL = '- _sendOutgoingMessage:';
 
   // 最大抓取深度：根（parent）记为 0 层，直接子调用为 1 层
   const MAX_DEPTH = 5;
@@ -117,16 +119,16 @@ setImmediate(function () {
 
         // 解析 selector
         let sel = '<sel?>';
-        try { sel = selToString(args[1] as NativePointer); } catch {}
+        try { sel = selToString(args[1] as NativePointer); } catch { }
         if (isNoisy(sel)) return;
 
         // 取 receiver，super 时从 objc_super* 解出 receiver
         let recvPtr = args[0] as NativePointer;
         if (isSuper) {
-          try { recvPtr = (args[0] as NativePointer).readPointer(); } catch {}
+          try { recvPtr = (args[0] as NativePointer).readPointer(); } catch { }
         }
         let cls = '<?>';
-        try { cls = new ObjC.Object(recvPtr).$className || cls; } catch {}
+        try { cls = new ObjC.Object(recvPtr).$className || cls; } catch { }
 
         const sig = `${cls} ${sel}${isSuper ? ' [super]' : ''}`;
         const node: Node = { sig, children: [] };

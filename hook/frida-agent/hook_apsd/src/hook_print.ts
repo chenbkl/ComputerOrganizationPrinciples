@@ -1,5 +1,5 @@
 /// <reference types="frida-gum" />
-/// <reference path="./types/frida-objc.d.ts" />
+import ObjC from "frida-objc-bridge";
 
 // export {};
 

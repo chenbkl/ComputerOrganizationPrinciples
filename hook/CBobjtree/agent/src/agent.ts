@@ -1,4 +1,4 @@
-import { stringify } from 'querystring';
+// import { stringify } from 'querystring';
 import { HookSpec, TraceEvent } from './lib/types';
 import ObjC from 'frida-objc-bridge'
 

@@ -1,4 +1,4 @@
-import { HookSpec } from './lib/types';
+// import { HookSpec } from './lib/types';
 import { Agent } from './agent';
 
 const agent = new Agent();

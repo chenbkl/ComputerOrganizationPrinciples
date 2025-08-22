@@ -1,8 +1,8 @@
 
 /// <reference types="frida-gum" />
-/// <reference types="./types/frida-objc.d.ts" />
+import ObjC from "frida-objc-bridge";
 
-export {};
+export { };
 setImmediate(function () {
   /**
    * 作用：在“父方法”执行窗口内，仅记录其“直接子调用”（深度=1）的 ObjC 方法，
@@ -33,7 +33,7 @@ setImmediate(function () {
   const NOISY_PREFIX = ['init', 'copy', 'mutableCopy'];
 
   // === 实现区 ===
-  function isNoisy(sel:string) {
+  function isNoisy(sel: string) {
     if (NOISY_EXACT.has(sel)) return true;
     for (const p of NOISY_PREFIX) {
       if (sel.startsWith(p)) return true;
@@ -66,7 +66,7 @@ setImmediate(function () {
   // 维护“父方法窗口”状态：一个线程可能出现嵌套，做成栈更稳妥
   const activeStacks = new Map<Tid, State[]>(); // tid -> [ { depth: 0, counts: Map<string,int>, seen: Set<string> } ]
 
-  function topState(tid:Tid) {
+  function topState(tid: Tid) {
     const stack = activeStacks.get(tid);
     if (!stack || stack.length === 0) return null;
     return stack[stack.length - 1];
@@ -78,7 +78,7 @@ setImmediate(function () {
       let stack = activeStacks.get(this.tid);
       if (!stack) { stack = []; activeStacks.set(this.tid, stack); }
 
-      const state:State = { depth: 0, counts: new Map<string, number>(), seen: new Set<string>() };
+      const state: State = { depth: 0, counts: new Map<string, number>(), seen: new Set<string>() };
       stack.push(state);
       console.log(`[ENTER parent] ${PARENT_CLASS} ${PARENT_SEL}`);
     },
@@ -100,7 +100,7 @@ setImmediate(function () {
   });
 
   // 通用的 objc_msgSend 钩子（含 super 版本）
-  function hookMsgSend(name:string, isSuper:boolean) {
+  function hookMsgSend(name: string, isSuper: boolean) {
     const addr = Module.findGlobalExportByName(name);
     if (!addr) { console.log(`WARN: ${name} not found`); return; }
 
@@ -112,9 +112,9 @@ setImmediate(function () {
         if (st.depth !== 1) return; // 只关心“直接子调用”
 
         try {
-        //   const sel = ObjC.selectorAsString(args[1] as NativePointer);
-        //   const sel = selToString(args[1] as NativePointer);
-        const sel = selToString(args[1] as NativePointer);
+          //   const sel = ObjC.selectorAsString(args[1] as NativePointer);
+          //   const sel = selToString(args[1] as NativePointer);
+          const sel = selToString(args[1] as NativePointer);
           if (isNoisy(sel)) return;
 
           // 取 receiver
@@ -160,15 +160,14 @@ setImmediate(function () {
 
 // SEL -> string（超简版）
 function selToString(sel: NativePointer): string {
-    if (!sel || sel.isNull()) return '<nil>';
-    try {
-      const objc = Process.getModuleByName('libobjc.A.dylib');
-      const p = objc.getExportByName('sel_getName');
-      const sel_getName = new NativeFunction(p, 'pointer', ['pointer']) as (s: NativePointer) => NativePointer;
-      const cstr = sel_getName(sel);
-      return cstr.isNull() ? '<nil>' : (cstr.readUtf8String() || '<empty>');
-    } catch {
-      return '<unknown_sel>';
-    }
+  if (!sel || sel.isNull()) return '<nil>';
+  try {
+    const objc = Process.getModuleByName('libobjc.A.dylib');
+    const p = objc.getExportByName('sel_getName');
+    const sel_getName = new NativeFunction(p, 'pointer', ['pointer']) as (s: NativePointer) => NativePointer;
+    const cstr = sel_getName(sel);
+    return cstr.isNull() ? '<nil>' : (cstr.readUtf8String() || '<empty>');
+  } catch {
+    return '<unknown_sel>';
   }
-  
+}

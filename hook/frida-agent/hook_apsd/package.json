@@ -12,9 +12,10 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@types/frida-gum": "latest",
+    "@types/frida-gum": "^19.0.1",
     "@types/node": "^24.3.0",
     "frida-compile": "^19.0.4",
+    "frida-objc-bridge": "^8.0.5",
     "typescript": "^5.9.2"
   }
 }

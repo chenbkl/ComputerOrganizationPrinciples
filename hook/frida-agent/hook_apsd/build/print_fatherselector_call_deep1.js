@@ -1,7 +1,7 @@
 "use strict";
-/// <reference types="frida-gum" />
-/// <reference types="./types/frida-objc.d.ts" />
 Object.defineProperty(exports, "__esModule", { value: true });
+/// <reference types="frida-gum" />
+const frida_objc_bridge_1 = require("frida-objc-bridge");
 setImmediate(function () {
     /**
      * 作用：在“父方法”执行窗口内，仅记录其“直接子调用”（深度=1）的 ObjC 方法，
@@ -37,11 +37,11 @@ setImmediate(function () {
         }
         return false;
     }
-    if (!ObjC.available) {
+    if (!frida_objc_bridge_1.default.available) {
         console.log('ObjC not available');
         return; // 现在在函数体内，合法
     }
-    const Parent = ObjC.classes[PARENT_CLASS];
+    const Parent = frida_objc_bridge_1.default.classes[PARENT_CLASS];
     if (!Parent) {
         console.log(`Class not found: ${PARENT_CLASS}`);
         return;
@@ -115,7 +115,7 @@ setImmediate(function () {
                         // objc_super * -> receiver 在偏移 0
                         recvPtr = args[0].readPointer();
                     }
-                    const recv = new ObjC.Object(recvPtr);
+                    const recv = new frida_objc_bridge_1.default.Object(recvPtr);
                     const cls = recv.$className;
                     const key = `${cls} ${sel}${isSuper ? ' [super]' : ''}`;
                     if (LIVE_PRINT) {

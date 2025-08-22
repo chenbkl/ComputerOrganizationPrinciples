@@ -1,14 +1,13 @@
 {
   "compilerOptions": {
     "target": "ES2020",
-    "module": "commonjs",
-    "strict": true,
-    "types": ["frida-gum","node"],
-    "rootDir": "./src",
-    "outDir": "./build",
-    "typeRoots": ["./src/types","./node_modules/@types","./node_modules/frida-compile/types"],
-    "lib": ["es2020"],
-    "skipLibCheck": true
-  },
-  "include": ["./src/","./src/types/"]
+    "module": "none",
+    "types": [
+      "frida-gum",
+      "frida-objc-bridge"
+    ],
+    "skipLibCheck": true,
+    "strict": false,
+    "outDir": "build"
+  }
 }

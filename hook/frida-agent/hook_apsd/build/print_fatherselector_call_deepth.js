@@ -1,6 +1,7 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference types="frida-gum" />
-/// <reference types="./types/frida-objc.d.ts" />
+const frida_objc_bridge_1 = require("frida-objc-bridge");
 setImmediate(function () {
     // === 配置区 ===
     const PARENT_CLASS = 'APSCourier';
@@ -29,11 +30,11 @@ setImmediate(function () {
                 return true;
         return false;
     }
-    if (!ObjC.available) {
+    if (!frida_objc_bridge_1.default.available) {
         console.log('ObjC not available');
         return;
     }
-    const Parent = ObjC.classes[PARENT_CLASS];
+    const Parent = frida_objc_bridge_1.default.classes[PARENT_CLASS];
     if (!Parent) {
         console.log(`Class not found: ${PARENT_CLASS}`);
         return;
@@ -128,7 +129,7 @@ setImmediate(function () {
                 }
                 let cls = '<?>';
                 try {
-                    cls = new ObjC.Object(recvPtr).$className || cls;
+                    cls = new frida_objc_bridge_1.default.Object(recvPtr).$className || cls;
                 }
                 catch { }
                 const sig = `${cls} ${sel}${isSuper ? ' [super]' : ''}`;

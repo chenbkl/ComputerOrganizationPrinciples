@@ -1,7 +1,8 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 /// <reference types="frida-gum" />
-/// <reference path="./types/frida-objc.d.ts" />
+const frida_objc_bridge_1 = require("frida-objc-bridge");
 // export {};
-const userInfoSelector = ObjC.classes.APSOutgoingMessage['- userInfo'];
+const userInfoSelector = frida_objc_bridge_1.default.classes.APSOutgoingMessage['- userInfo'];
 const selectorModule = Process.findModuleByAddress(userInfoSelector.implementation);
 console.log('module = ', selectorModule?.name);
