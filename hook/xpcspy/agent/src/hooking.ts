@@ -81,10 +81,10 @@ const _onEnterHandler = function(symbol: string,
             }
 		} // Parse `OS_xpc_data` as well?
 	}
-	console.log("xpc 最终发送的消息为：", {
+	console.log("xpc 最终发送的消息为：", JSON.stringify({
 		timestamp: ts,
 		data: { conn: connectionDesc, message: messageDesc }
-	});
+	}));
 	send({
 		type: 'agent:trace:data',
 		message: 
