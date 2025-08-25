@@ -4,8 +4,10 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "frida-compile -o ./build/hook_write_data.js ./src/hook_write_data.ts",
-    "watch": "frida-compile -o ./build/hook_write_data.js ./src/hook_write_data.ts -w"
+    "build_hook_objcmethod_print_parameters": "frida-compile -o ./build/hook_objcmethod_print_parameters.js ./src/hook_objcmethod_print_parameters.ts",
+    "watch_hook_objcmethod_print_parameters": "frida-compile -o ./build/hook_objcmethod_print_parameters.js ./src/hook_objcmethod_print_parameters.ts -w",
+    "build_hook_and_backtrace_selector": "frida-compile -o ./build/hook_and_backtrace_selector.js ./src/hook_and_backtrace_selector.ts",
+    "watch_hook_and_backtrace_selector": "frida-compile -o ./build/hook_and_backtrace_selector.js ./src/hook_and_backtrace_selector.ts -w"
   },
   "keywords": [],
   "author": "",
