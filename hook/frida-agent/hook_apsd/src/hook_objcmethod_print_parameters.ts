@@ -3,11 +3,12 @@
 import ObjC from "frida-objc-bridge";
 
 
-const class_name = "APSTCPStream"; // 目标 Objective-C 类名（字符串）
-const selector = "- _connectToServerWithConfiguration:"; // 目标选择子（实例方法前缀 '-'，类方法则用 '+'）
+const class_name = "UIControl"; // 目标 Objective-C 类名（字符串）
+const selector = "- sendAction:to:forEvent:"; // 目标选择子（实例方法前缀 '-'，类方法则用 '+'）
 // -[APSTCPStream serverHostname]
 // -[APSCourierConnection serverHostnameForInterface:]
-
+//  UIControl sendAction:to:forEvent:
+//  APSTCPStream _connectToServerWithConfiguration:
 if (!ObjC.available) {
     console.log('[-] ObjC runtime 不可用，本脚本面向 iOS/macOS。');
     throw new Error('ObjC runtime 不可用');
