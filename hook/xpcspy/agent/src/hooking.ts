@@ -1,16 +1,19 @@
 import { FilterType } from './lib/types';
 import { IFilter, IFunctionPointer } from './lib/interfaces';
 import { objcObjectDebugDesc, wildcardMatch } from './lib/helpers';
-import { xpcConnectionGetName,
-		xpcConnectionCallEventHandler,
-		xpcGetType,
-		} from './lib/systemFunctions';
-import { formatConnectionDescription,
-		formatMessageDescription } from './lib/formatters';
+import {
+	xpcConnectionGetName,
+	xpcConnectionCallEventHandler,
+	xpcGetType,
+} from './lib/systemFunctions';
+import {
+	formatConnectionDescription,
+	formatMessageDescription
+} from './lib/formatters';
 import { outgoingXPCMessagesFunctionPointer } from './consts';
 import { parseBPListKeysRecursively } from './lib/parsers';
 
-/**
+/**`
  * TODO:
  *  - Use a class for the agent, makes more sense to store `shouldParse` and so on there.
  *  - Add option to fetch the process' name in the connection description.
@@ -21,7 +24,7 @@ import { parseBPListKeysRecursively } from './lib/parsers';
 
 export function installHooks(filter: IFilter, shouldParse: boolean) {
 	const pointers: IFunctionPointer[] = [];
-	
+
 	if (filter.type & FilterType.Outgoing) {
 		pointers.push(...outgoingXPCMessagesFunctionPointer);
 	}
@@ -29,13 +32,13 @@ export function installHooks(filter: IFilter, shouldParse: boolean) {
 	if (filter.type & FilterType.Incoming) {
 		pointers.push(xpcConnectionCallEventHandler);
 	}
-	
+
 	for (let pointer of pointers) {
-		Interceptor.attach(pointer.ptr, 
-			{ 
-				onEnter: function(this: InvocationContext, args: InvocationArguments) {
+		Interceptor.attach(pointer.ptr,
+			{
+				onEnter: function (this: InvocationContext, args: InvocationArguments) {
 					_onEnterHandler(pointer.name, args, filter.connectionNamePattern, shouldParse);
-				} 
+				}
 			});
 	}
 
@@ -44,10 +47,10 @@ export function installHooks(filter: IFilter, shouldParse: boolean) {
 	});
 }
 
-const _onEnterHandler = function(symbol: string,
-								args: InvocationArguments,
-								connectionNamePattern: string,
-								shouldParse: boolean): void {
+const _onEnterHandler = function (symbol: string,
+	args: InvocationArguments,
+	connectionNamePattern: string,
+	shouldParse: boolean): void {
 	const p_connection = new NativePointer(args[0]);
 	const connectionName = (<NativePointer>xpcConnectionGetName.call(p_connection)).readCString();
 	if (connectionNamePattern != '*' && connectionName && !wildcardMatch(connectionName, connectionNamePattern)) {
@@ -62,7 +65,7 @@ const _onEnterHandler = function(symbol: string,
 	*/
 	send({
 		type: 'agent:trace:symbol',
-		message: {timestamp: ts, symbol: symbol}
+		message: { timestamp: ts, symbol: symbol }
 	});
 
 	let connectionDesc = objcObjectDebugDesc((p_connection));
@@ -75,22 +78,22 @@ const _onEnterHandler = function(symbol: string,
 	if (shouldParse) {
 		const messageType = objcObjectDebugDesc(<NativePointer>xpcGetType.call(p_message));
 		if (messageType == 'OS_xpc_dictionary') {
-            const parsingResult = parseBPListKeysRecursively(p_connection, p_message);
-            if (parsingResult.length > 0) {
-                messageDesc = formatMessageDescription(messageDesc, parsingResult);
-            }
+			const parsingResult = parseBPListKeysRecursively(p_connection, p_message);
+			if (parsingResult.length > 0) {
+				messageDesc = formatMessageDescription(messageDesc, parsingResult);
+			}
 		} // Parse `OS_xpc_data` as well?
 	}
-	console.log("xpc 最终发送的消息为：", JSON.stringify({
-		timestamp: ts,
-		data: { conn: connectionDesc, message: messageDesc }
-	}));
+	// console.log("xpc 最终发送的消息为：", JSON.stringify({
+	// 	timestamp: ts,
+	// 	data: { conn: connectionDesc, message: messageDesc }
+	// }));
 	send({
 		type: 'agent:trace:data',
-		message: 
+		message:
 		{
-			timestamp: ts, 
-			data: { conn: connectionDesc, message: messageDesc } 
+			timestamp: ts,
+			data: { conn: connectionDesc, message: messageDesc }
 		}
 	});
 }

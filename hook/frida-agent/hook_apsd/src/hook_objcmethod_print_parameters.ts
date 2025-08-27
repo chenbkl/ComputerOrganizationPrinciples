@@ -1,14 +1,16 @@
 
 
 import ObjC from "frida-objc-bridge";
+import { parseObjCTypes } from "./hook_objcmethod_print_parameters_parseObjcTypes";
 
-
-const class_name = "UIControl"; // 目标 Objective-C 类名（字符串）
-const selector = "- sendAction:to:forEvent:"; // 目标选择子（实例方法前缀 '-'，类方法则用 '+'）
+const class_name = "APSCourier"; // 目标 Objective-C 类名（字符串）
+const selector = "- _sendOutgoingMessage:"; // 目标选择子（实例方法前缀 '-'，类方法则用 '+'）
 // -[APSTCPStream serverHostname]
 // -[APSCourierConnection serverHostnameForInterface:]
 //  UIControl sendAction:to:forEvent:
 //  APSTCPStream _connectToServerWithConfiguration:
+// [APSOutgoingMessage - userInfo]
+// -[APSCourier _sendOutgoingMessage:]
 if (!ObjC.available) {
     console.log('[-] ObjC runtime 不可用，本脚本面向 iOS/macOS。');
     throw new Error('ObjC runtime 不可用');
@@ -30,23 +32,37 @@ Interceptor.attach(Cls[selector].implementation, {
     onEnter(args) {
         console.log(`\n[*] Enter [${class_name} ${selector}]`);
 
+        // dumpAt(args[2], 'sel');
+        // dumpAt(args[3], 'obj');
+
         const m = ObjC.classes[class_name][selector];
-        const argument_count = m.argumentTypes.length;
-        if (argument_count <= 2) {
-            console.log('该方法无参数');
-        } else {
-            console.log(`该方法有 ${argument_count - 2} 个参数，依次为：`);
-            // for (let i = 2; i < argument_count; i++) {
-            //     try {
-            //         console.log("第", i, "个参数类型为 =", m.argumentTypes[i], " 地址为 =", args[i]);
-            //         const argObj = new ObjC.Object(args[i]);
-            //         dump_print_ObjCobject(argObj);
-            //     } catch (e) {
-            //         console.log(`  参数[${i - 2}] 不是 ObjC 对象，原始值:`, args[i]);
-            //         continue;
-            //     }
-            // }
-        }
+        const sig = parseObjCTypes(m.types);
+        console.log("入参为：", ObjC.selectorAsString(args[1]));
+        printArgs(args, sig);
+
+        // const argument_count = m.argumentTypes.length;
+        // if (argument_count <= 2) {
+        //     console.log('该方法无参数');
+        // } else {
+        //     console.log(`该方法有 ${argument_count - 2} 个参数，依次为：`);
+        //     for (let i = 2; i < argument_count; i++) {
+        //         const type = m.argumentTypes[i];
+        //         const arg = args[i];
+        //         console.log("第", i - 2, "个参数类型为 =", type)
+        //         // 判断是否是 ObjC 对象（通常 `@` 表示对象类型）
+        //         if (type === '@') {
+        //             console.log("第", i - 2, "个参数类型为 ObjC 对象 地址 =", arg);
+        //             const argObj = new ObjC.Object(arg);
+        //             dump_print_ObjCobject(argObj);
+        //         } else if (type === ':') {
+        //             console.log("第", i - 2, "个参数类型为 SEL 选择子 原始值 =", arg);
+        //             const sel = ObjC.selectorAsString(arg);
+        //             console.log("  选择子字符串 =", sel);
+        //         } else {
+        //             console.log("第", i - 2, "个参数类型为 =", type, " 原始值 =", arg);
+        //         }
+        //     }
+        // }
     },
     onLeave(retval) {
         try {
@@ -60,6 +76,63 @@ Interceptor.attach(Cls[selector].implementation, {
         }
     }
 });
+
+/**
+ * 根据方法签名打印所有参数的真实值
+ * @param {NativePointer[]} args Frida 提供的 args
+ * @param {ReturnType<typeof parseObjCTypes>} sig parseObjCTypes() 的结果
+ */
+function printArgs(args: NativePointer[], sig) {
+    sig.args.forEach((a, idx) => {
+        const enc = a.enc;
+        const friendly = a.friendly;
+
+        let label;
+        if (idx === 0) label = "self";
+        else if (idx === 1) label = "_cmd";
+        else label = `arg${idx - 2}`;
+
+        console.log(`\n[${label}] enc=${enc}, friendly=${friendly}`);
+
+        try {
+            if (enc === '@') {
+                if (!args[idx].isNull()) {
+                    const obj = new ObjC.Object(args[idx]);
+                    console.log(`  ObjC object: ${obj.$className} -> ${obj.toString()}`);
+                    if (idx >= 2) {
+                        dump_print_ObjCobject(obj);
+                    }
+                } else {
+                    console.log("  ObjC object: NULL");
+                }
+            } else if (enc === ':') {
+                console.log("  SEL:", ObjC.selectorAsString(args[idx]));
+            } else if (enc === '#') {
+                const cls = new ObjC.Object(args[idx]);
+                console.log("  Class:", cls.$className);
+            } else if (enc === 'c' || enc === 'C') {
+                console.log("  char =", args[idx].toInt32());
+            } else if (enc === 'i' || enc === 'I' || enc === 's' || enc === 'S' ||
+                enc === 'q' || enc === 'Q' || enc === 'l' || enc === 'L') {
+                console.log("  int/long =", args[idx].toInt32());
+            } else if (enc === 'f') {
+                console.log("  float =", args[idx].readFloat());
+            } else if (enc === 'd') {
+                console.log("  double =", args[idx].readDouble());
+            } else if (enc === 'B') {
+                console.log("  bool =", args[idx].toInt32() !== 0);
+            } else if (enc === '*' || enc === '^c') {
+                console.log("  C string =", args[idx].readCString());
+            } else if (enc.startsWith('^')) {
+                console.log("  pointer =", args[idx], "->", args[idx].readPointer());
+            } else {
+                console.log("  raw =", args[idx]);
+            }
+        } catch (e) {
+            console.log("  <failed to read>", e);
+        }
+    });
+}
 
 function dump_print_ObjCobject(obj: ObjC.Object) {
     if (obj.isKindOfClass_(ObjC.classes.NSError)) {
@@ -78,8 +151,72 @@ function dump_print_ObjCobject(obj: ObjC.Object) {
     if (obj.isKindOfClass_(ObjC.classes.NSDictionary)) {
         console.log('  字典键值对:', obj.toString());
     }
-    console.log("该参数不属于上述类型，直接打印对象：", obj.toString());
+    console.log("不属于上述NS对象类型，直接打印对象：", obj.toString());
     dump_objcobject_ivars(obj);
+}
+
+function safeHexDump(addr, len = 64) {
+    try { console.log(hexdump(addr, { offset: 0, length: len, header: false })); }
+    catch { console.log('<hexdump failed>'); }
+}
+
+function printAsSEL(addr) {
+    try {
+        const s = ObjC.selectorAsString(addr);
+        console.log(`SEL = ${s} @ ${addr}`);
+        return true;
+    } catch { }
+    return false;
+}
+
+function printAsObjC(addr) {
+    try {
+        const o = new ObjC.Object(addr); // 支持 tagged pointer；若不是 ObjC 对象会抛异常
+        console.log(`${o.$className} @ ${addr}`);
+        // 常见类型友好展示
+        if (o.$className === 'NSString') {
+            try { console.log(`  NSString: "${o.toString()}"`); } catch { }
+        } else if (o.$className === 'NSNumber') {
+            try { console.log(`  NSNumber: ${o.toString()}`); } catch { }
+        } else if (o.$className === 'NSData') {
+            try { console.log(`  NSData length=${o.length().toString()}`); } catch { }
+        } else if (o.$className === 'UIEvent') {
+            try { console.log(`  UIEvent.type=${o.type().toString()}`); } catch { }
+        }
+        return true;
+    } catch { }
+    return false;
+}
+
+function printAsCString(addr) {
+    try {
+        const s = addr.readCString();
+        console.log(`char* "${s}" @ ${addr}`);
+        return true;
+    } catch { }
+    return false;
+}
+
+/**
+ * 通用读取：按提示类型先解；否则按 SEL -> ObjC -> C 字符串 -> 原始 hexdump 的顺序探测
+ * hint: 'sel' | 'obj' | 'cstr' | 'raw'
+ */
+function dumpAt(addr, hint = null) {
+    const p = ptr(addr);
+    if (p.isNull()) { console.log('NULL'); return; }
+
+    if (hint === 'sel') { if (printAsSEL(p)) return; }
+    if (hint === 'obj') { if (printAsObjC(p)) return; }
+    if (hint === 'cstr') { if (printAsCString(p)) return; }
+    if (hint === 'raw') { safeHexDump(p); return; }
+
+    // 无提示：自动探测
+    if (printAsSEL(p)) return;
+    if (printAsObjC(p)) return;
+    if (printAsCString(p)) return;
+
+    console.log(`raw memory @ ${p}`);
+    safeHexDump(p, 96);
 }
 
 

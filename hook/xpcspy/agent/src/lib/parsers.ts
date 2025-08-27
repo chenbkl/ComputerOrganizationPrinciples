@@ -29,25 +29,54 @@ export function parseBPListKeysRecursively(
                 parsingResult.push(...parseBPListKeysRecursively(connection, value));
                 break;
             case 'OS_xpc_data':
+                const length = (xpcDataGetLength.call(value) as number) | 0;
+                if (!Number.isFinite(length) || length <= 0) break;
+
                 const bytesPtr = <NativePointer>xpcDataGetBytesPtr.call(value);
-                const format = bytesPtr.readCString(8);
-                if (format != null && !format.startsWith("bplist")) {
-                    break;
+                if (bytesPtr.isNull()) break;
+
+                let magic: string | null = null;
+                if (length >= 8) {
+                    try { magic = bytesPtr.readCString(8); } catch { magic = null; }
                 }
 
-                const length = xpcDataGetLength.call(value) as number;
                 let result: IParsingResult;
-
-                if (isKnownBPListData(format)) {
-                    result = parseKnownBPList(bytesPtr, length);
-                } else {
-                    result = parseGenericBPList(connection, xpcDict);
-                    result.format = format as SupportedBPListFormat;
+                try {
+                    if (isKnownBPListData(magic)) {
+                        result = parseKnownBPList(bytesPtr, length);
+                    } else {
+                        // ★ 原来这里把 xpcDict 传进去容易崩，改成当前的 data “value”
+                        result = parseGenericBPList(connection, value);
+                        if (magic && magic.startsWith('bplist')) {
+                            result.format = magic as SupportedBPListFormat;
+                        }
+                    }
+                } catch {
+                    break;  // 不把异常抛到顶层，避免终止脚本
                 }
 
-                result.key = key.readCString();
+                try { result.key = key.readCString() ?? null; } catch { result.key = null; }
                 parsingResult.push(result);
                 break;
+            // const bytesPtr = <NativePointer>xpcDataGetBytesPtr.call(value);
+            // const format = bytesPtr.readCString(8);
+            // if (format != null && !format.startsWith("bplist")) {
+            //     break;
+            // }
+
+            // const length = xpcDataGetLength.call(value) as number;
+            // let result: IParsingResult;
+
+            // if (isKnownBPListData(format)) {
+            //     result = parseKnownBPList(bytesPtr, length);
+            // } else {
+            //     result = parseGenericBPList(connection, xpcDict);
+            //     result.format = format as SupportedBPListFormat;
+            // }
+
+            // result.key = key.readCString();
+            // parsingResult.push(result);
+            // break;
             default:
                 break;
         }
@@ -73,37 +102,121 @@ function parseKnownBPList(
      * Parse binary plist data after detecting its format
      */
 
-    const bplistFmt = bytesPtr.readCString(8);
-    if (bplistFmt == 'bplist15') {
-        return {
-            key: null,
-            data: objcObjectDebugDesc(<NativePointer>__CFBinaryPlistCreate15.call(bytesPtr, length, ptr(0x0))),
-            format: 'bplist15'
-        }
-    } else if (bplistFmt == 'bplist00') {
-        return parseBPlist00(bytesPtr, length);
+    // const bplistFmt = bytesPtr.readCString(8);
+    // if (bplistFmt == 'bplist15') {
+    //     return {
+    //         key: null,
+    //         data: objcObjectDebugDesc(<NativePointer>__CFBinaryPlistCreate15.call(bytesPtr, length, ptr(0x0))),
+    //         format: 'bplist15'
+    //     }
+    // } else if (bplistFmt == 'bplist00') {
+    //     return parseBPlist00(bytesPtr, length);
+    // }
+    // throw new Error("Unknown bplist format");
+
+    if (bytesPtr.isNull() || !Number.isFinite(length) || length <= 0) {
+        return { key: null, data: '<empty>', format: 'bplist15' };
     }
 
-    throw new Error("Unknown bplist format");
+    // 先直接把 bplist 字节按“plist容器”解析
+    try {
+        const data = ObjC.classes.NSData.dataWithBytes_length_(bytesPtr, length);
+
+        // ① 解析成 Foundation 容器（NSDictionary/NSArray/...）
+        const fmtPtr = Memory.alloc(8); fmtPtr.writeU64(0);
+        const plistObj = ObjC.classes.NSPropertyListSerialization
+            .propertyListWithData_options_format_error_(data, 0, fmtPtr, ptr(0));
+        if (plistObj) {
+            // 可选：转成 XML 字符串更易读
+            try {
+                const xmlData = ObjC.classes.NSPropertyListSerialization
+                    .dataWithPropertyList_format_options_error_(plistObj, 100 /* XML */, 0, ptr(0));
+                const xmlStr = ObjC.classes.NSString.alloc().initWithData_encoding_(xmlData, 4 /* UTF8 */).toString();
+                return { key: null, data: xmlStr, format: 'bplist15' };
+            } catch (_) {
+                // 或直接给出容器的描述
+                return { key: null, data: objcObjectSafeDesc(plistObj), format: 'bplist15' };
+            }
+        }
+    } catch (_) {
+        // 继续尝试下一步
+    }
+
+    // ②（可选）这是 Keyed Archive 的话，再尝试解档成“对象”（先关 secure-coding）
+    try {
+        const data = ObjC.classes.NSData.dataWithBytes_length_(bytesPtr, length);
+        const un = ObjC.classes.NSKeyedUnarchiver.alloc()['initForReadingWithData:'](data);
+        if (un.respondsToSelector_('setRequiresSecureCoding:')) un;
+        let obj = un['decodeObjectForKey:']('root') || un['decodeObjectForKey:']('$top') || un['decodeObjectForKey:'](null);
+        un['finishDecoding'](); un.release();
+        if (obj) return { key: null, data: objcObjectSafeDesc(obj), format: 'bplist15' };
+    } catch (_) {
+        // 忽略，进入兜底
+    }
+
+    // ③ 最后兜底：再试一次 CF 的私有解析 + CF 描述（而不是强行 new ObjC.Object）
+    try {
+        const cf = <NativePointer>__CFBinaryPlistCreate15.call(bytesPtr, length, ptr(0));
+        if (!cf.isNull()) return { key: null, data: cfSafeDesc(cf), format: 'bplist15' };
+    } catch (_) { }
+
+    return { key: null, data: '<error>', format: 'bplist15' };
+}
+
+function objcObjectSafeDesc(ptr: NativePointer): string {
+    if (!ptr || ptr.isNull()) return '<null>';
+    try {
+        const obj = new ObjC.Object(ptr);
+        return obj.toString();
+    } catch {
+        return cfSafeDesc(ptr);
+    }
+}
+
+const CFCopyDescription = new NativeFunction(Module.findGlobalExportByName('CFCopyDescription')!, 'pointer', ['pointer']);
+const CFRelease = new NativeFunction(Module.findGlobalExportByName('CFRelease')!, 'void', ['pointer']);
+
+function cfSafeDesc(ptr: NativePointer): string {
+    try {
+        const cfStr = CFCopyDescription(ptr);
+        if (cfStr.isNull()) return '<cf:null>';
+        try {
+            return new ObjC.Object(cfStr).toString(); // CFStringRef ↔︎ NSString 橋接
+        } finally {
+            CFRelease(cfStr);
+        }
+    } catch {
+        return '<cf:unprintable>';
+    }
 }
 
 function parseGenericBPList(
     connection: NativePointer,
     message: NativePointer
 ): IParsingResult {
+    // const decoder = ObjC.classes.NSXPCDecoder.alloc().init();
+    // decoder["- set_connection:"](connection);
+    // decoder["- _startReadingFromXPCObject:"](message);
+
+    // /* TODO: return only the data object, let the user provide format and key */
+    // const result = {
+    //     format: null,
+    //     data: decoder.debugDescription(),
+    //     key: null,
+    // };
+
+    // decoder.dealloc();
+    // return result;
     const decoder = ObjC.classes.NSXPCDecoder.alloc().init();
-    decoder["- set_connection:"](connection);
-    decoder["- _startReadingFromXPCObject:"](message);
-
-    /* TODO: return only the data object, let the user provide format and key */
-    const result = {
-        format: null,
-        data: decoder.debugDescription(),
-        key: null,
-    };
-
-    decoder.dealloc();
-    return result;
+    try {
+        decoder['- set_connection:'](connection);
+        decoder['- _startReadingFromXPCObject:'](message); // ★ 这里用 value
+        return { format: null, data: decoder.debugDescription(), key: null };
+    } catch (e) {
+        return { format: null, data: `<decoder error: ${String(e)}>`, key: null };
+    } finally {
+        decoder.dealloc();
+    }
 }
 
 function parseBPlist00(bytesPtr: NativePointer, length: number): IParsingResult {

@@ -1,5 +1,5 @@
 📦
-93784 /src/hook_and_backtrace_selector.js
+93787 /src/hook_and_backtrace_selector.js
 ✄
 // node_modules/frida-objc-bridge/lib/api.js
 var cachedApi = null;
@@ -2856,8 +2856,8 @@ function printBacktrace(ctx, fuzzy = true, max = 32) {
   }
   console.log("====================================\n");
 }
-var CLASS_NAME = "APSCourier";
-var SELECTOR = "- _sendOutgoingMessage:";
+var CLASS_NAME = "__NSCFOutputStream";
+var SELECTOR = "- write:maxLength:";
 if (!frida_objc_bridge_default.available) {
   console.log("[-] ObjC runtime \u4E0D\u53EF\u7528\uFF0C\u672C\u811A\u672C\u9762\u5411 iOS/macOS\u3002");
 } else {

@@ -1,7 +1,6 @@
 from os import path
 from collections import OrderedDict
-
-import frida
+import click
 
 from ..lib.types import Event
 import datetime
@@ -35,7 +34,12 @@ class Agent:
 
     def _on_message(self, message, data, ui):
         if message['type'] == 'error':
-            click.secho(message['stack'], fg='red');
+            stack = message.get('stack') or message.get('description') or str(message)
+            try:
+                click.secho(stack, fg='red')
+            except Exception:
+                print(stack)
+            return  # ★ 关键：处理完 error 后直接返回，别再访问 payload
         mtype = message['payload']['type']
 
         if mtype == 'agent:hooks_installed':

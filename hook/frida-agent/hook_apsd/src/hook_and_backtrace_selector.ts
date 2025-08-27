@@ -18,8 +18,12 @@ function printBacktrace(ctx: CpuContext, fuzzy = true, max = 32) {         // �
 }
 
 // 目标 ObjC 方法（如需修改，改这两行）
-const CLASS_NAME = 'APSCourier';                             // 纯 JS：目标 Objective-C 类名（字符串）
-const SELECTOR = '- _sendOutgoingMessage:';                   // 纯 JS：目标选择子（实例方法前缀 '-'，类方法则用 '+'）
+const CLASS_NAME = '__NSCFOutputStream';                             // 纯 JS：目标 Objective-C 类名（字符串）
+const SELECTOR = '- write:maxLength:';                   // 纯 JS：目标选择子（实例方法前缀 '-'，类方法则用 '+'）
+// -[__NSCFOutputStream hasSpaceAvailable]
+// [APSCourier courierConnection:dataReceived:onInterface:withGeneration:isWakingMessage:]
+// -[APSDaemon init]
+// [__NSCFOutputStream write:maxLength:] 
 
 if (!ObjC.available) {                                         // Frida 提供：ObjC 是 Objective-C 运行时桥。
     // ObjC.available 为布尔值，表示当前进程中是否可使用 ObjC（iOS/macOS 原生 App 一般为 true）。
