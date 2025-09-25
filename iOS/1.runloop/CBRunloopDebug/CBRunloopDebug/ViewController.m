@@ -17,32 +17,29 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
-    NSThread *thread = [[NSThread alloc]initWithBlock:^{
-        NSRunLoop *runloop = [NSRunLoop currentRunLoop];
-//        NSLog(@"%@",runloop);
-        NSLog(@"当前线程是：%@",[NSThread currentThread]);
-        CFRunLoopRef rl = CFRunLoopGetCurrent();
-        CFShow(rl);
-        [runloop addPort:[NSMachPort port] forMode:NSDefaultRunLoopMode];
-        [runloop run];
-    }];
-    [thread start];
-    CFRunLoopRef runloop = CFRunLoopGetMain();
-    CFShow(runloop);
-    
+//    NSThread *thread = [[NSThread alloc]initWithBlock:^{
+//        NSRunLoop *runloop = [NSRunLoop currentRunLoop];
+//        [NSTimer scheduledTimerWithTimeInterval:1.0 repeats:YES block:^(NSTimer * _Nonnull timer) {
+//            NSLog(@"执行定时器任务");
+//        }];
+//        NSLog(@"runloop开始循环");
+//        [runloop run];
+//        NSLog(@"runloop退出，线程退出");
+//    }];
+//    [thread start];
 }
-- (IBAction)click:(id)sender {
-    dispatch_async(dispatch_get_main_queue(), ^{
-        NSLog(@"GCD BLOCK");
-    });
-    NSRunLoop *runloop = [NSRunLoop currentRunLoop];
-    [runloop performBlock:^{
-        NSLog(@"runloop performBlock");
-    }];
 
-//    CBViewController *vc = [[CBViewController alloc]init];
-//    [self.navigationController pushViewController:vc animated:YES];
-    
+
+- (IBAction)click:(id)sender {
+    CBViewController *vc = [[CBViewController alloc]init];
+    [self.navigationController pushViewController:vc animated:YES];
+//    dispatch_async(dispatch_get_main_queue(), ^{
+//        NSLog(@"GCD BLOCK");
+//    });
+//    NSRunLoop *runloop = [NSRunLoop currentRunLoop];
+//    [runloop performBlock:^{
+//        NSLog(@"runloop performBlock");
+//    }];
 }
 
 

@@ -1,0 +1,16 @@
+#本地docker测试环境
+
+services:
+  iosappdelivery:
+    image: iosappdelivery:latest
+    ports:
+      - "9000:8000"
+    volumes:
+      - ~/Downloads/uploads/debs_ipa:/data/debs_ipa
+    environment:
+      APP_ENV: test
+      SERVER_HOST: 127.0.0.1
+      SERVER_PORT: 9000
+      APP_NAME: 电e宝
+      BUNDLE_ID: com.sgec.deb
+      DEB_IPA_PATH: /data/debs_ipa
