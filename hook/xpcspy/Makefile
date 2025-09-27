@@ -1,6 +1,6 @@
 DIST_DIR := dist
 
-default: clean compile-agent sdist
+default: clean compile-agent sdist reinstall_xpcspy
 
 clean:
 	rm -rf $(DIST_DIR)/*
@@ -16,3 +16,6 @@ testupload:
 
 upload:
 	twine upload dist/*
+
+reinstall_xpcspy:
+	pipx uninstall xpcspy && pipx install dist/xpcspy-*.tar.gz

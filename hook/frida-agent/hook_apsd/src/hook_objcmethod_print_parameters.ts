@@ -3,8 +3,8 @@
 import ObjC from "frida-objc-bridge";
 import { parseObjCTypes } from "./hook_objcmethod_print_parameters_parseObjcTypes";
 
-const class_name = "APSCourier"; // 目标 Objective-C 类名（字符串）
-const selector = "- _sendOutgoingMessage:"; // 目标选择子（实例方法前缀 '-'，类方法则用 '+'）
+const class_name = "UIControl"; // 目标 Objective-C 类名（字符串）
+const selector = "- sendAction:to:forEvent:"; // 目标选择子（实例方法前缀 '-'，类方法则用 '+'）
 // -[APSTCPStream serverHostname]
 // -[APSCourierConnection serverHostnameForInterface:]
 //  UIControl sendAction:to:forEvent:

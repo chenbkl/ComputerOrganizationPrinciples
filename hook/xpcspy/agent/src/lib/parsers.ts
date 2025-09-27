@@ -10,6 +10,8 @@ import {
 // import { resourceLimits } from 'worker_threads';
 import ObjC from 'frida-objc-bridge';
 
+import { dumpCF } from './parse_bplist15';
+
 export function parseBPListKeysRecursively(
     connection: NativePointer,
     xpcDict: NativePointer
@@ -43,8 +45,11 @@ export function parseBPListKeysRecursively(
                 let result: IParsingResult;
                 try {
                     if (isKnownBPListData(magic)) {
+                        // 如果是已知的 bplist 格式，就直接按格式解析
+                        console.log("是已知的bplist格式:", magic, "开始解析");
                         result = parseKnownBPList(bytesPtr, length);
                     } else {
+                        // 否则就用 NSXPCDecoder 试着解析
                         // ★ 原来这里把 xpcDict 传进去容易崩，改成当前的 data “value”
                         result = parseGenericBPList(connection, value);
                         if (magic && magic.startsWith('bplist')) {
@@ -110,7 +115,7 @@ function parseKnownBPList(
     //         format: 'bplist15'
     //     }
     // } else if (bplistFmt == 'bplist00') {
-    //     return parseBPlist00(bytesPtr, length);
+    // return parseBPlist00(bytesPtr, length);
     // }
     // throw new Error("Unknown bplist format");
 
@@ -121,42 +126,54 @@ function parseKnownBPList(
     // 先直接把 bplist 字节按“plist容器”解析
     try {
         const data = ObjC.classes.NSData.dataWithBytes_length_(bytesPtr, length);
-
+        console.log("尝试用 NSPropertyListSerialization 解析...");
         // ① 解析成 Foundation 容器（NSDictionary/NSArray/...）
         const fmtPtr = Memory.alloc(8); fmtPtr.writeU64(0);
         const plistObj = ObjC.classes.NSPropertyListSerialization
             .propertyListWithData_options_format_error_(data, 0, fmtPtr, ptr(0));
+        console.log("解析PropertyList成功：", plistObj);
         if (plistObj) {
+            console.log("根类型为 Foundation 类:", plistObj.$className());
             // 可选：转成 XML 字符串更易读
-            try {
-                const xmlData = ObjC.classes.NSPropertyListSerialization
-                    .dataWithPropertyList_format_options_error_(plistObj, 100 /* XML */, 0, ptr(0));
-                const xmlStr = ObjC.classes.NSString.alloc().initWithData_encoding_(xmlData, 4 /* UTF8 */).toString();
-                return { key: null, data: xmlStr, format: 'bplist15' };
-            } catch (_) {
-                // 或直接给出容器的描述
-                return { key: null, data: objcObjectSafeDesc(plistObj), format: 'bplist15' };
-            }
+            // try {
+            //     const xmlData = ObjC.classes.NSPropertyListSerialization
+            //         .dataWithPropertyList_format_options_error_(plistObj, 100 /* XML */, 0, ptr(0));
+            //     const xmlStr = ObjC.classes.NSString.alloc().initWithData_encoding_(xmlData, 4 /* UTF8 */).toString();
+            //     return { key: null, data: xmlStr, format: 'bplist15' };
+            // } catch (_) {
+            //     // 或直接给出容器的描述
+            //     return { key: null, data: objcObjectSafeDesc(plistObj), format: 'bplist15' };
+            // }
         }
-    } catch (_) {
-        // 继续尝试下一步
+    } catch (error) {
+        console.log("用 NSPropertyListSerialization 解析失败，尝试其他方法...", error);
     }
 
     // ②（可选）这是 Keyed Archive 的话，再尝试解档成“对象”（先关 secure-coding）
     try {
+        console.log("尝试用 NSKeyedUnarchiver 解档...");
+
         const data = ObjC.classes.NSData.dataWithBytes_length_(bytesPtr, length);
         const un = ObjC.classes.NSKeyedUnarchiver.alloc()['initForReadingWithData:'](data);
         if (un.respondsToSelector_('setRequiresSecureCoding:')) un;
         let obj = un['decodeObjectForKey:']('root') || un['decodeObjectForKey:']('$top') || un['decodeObjectForKey:'](null);
         un['finishDecoding'](); un.release();
+        console.log("解档结果：", obj);
         if (obj) return { key: null, data: objcObjectSafeDesc(obj), format: 'bplist15' };
-    } catch (_) {
-        // 忽略，进入兜底
+    } catch (error) {
+        console.log("用 NSKeyedUnarchiver 解档失败，尝试其他方法...", error);
     }
 
     // ③ 最后兜底：再试一次 CF 的私有解析 + CF 描述（而不是强行 new ObjC.Object）
     try {
         const cf = <NativePointer>__CFBinaryPlistCreate15.call(bytesPtr, length, ptr(0));
+
+        if (cf.isNull()) return { key: null, data: '<error>', format: 'bplist15' };
+
+        const s = dumpCF(cf, 0);
+        // CFRelease(root);
+
+        console.log("尝试用 __CFBinaryPlistCreate15 解析，结果：", s);
         if (!cf.isNull()) return { key: null, data: cfSafeDesc(cf), format: 'bplist15' };
     } catch (_) { }
 
@@ -219,7 +236,7 @@ function parseGenericBPList(
     }
 }
 
-function parseBPlist00(bytesPtr: NativePointer, length: number): IParsingResult {
+export function parseBPlist00(bytesPtr: NativePointer, length: number): IParsingResult {
     const data: NativePointer = ObjC.classes.NSData.dataWithBytes_length_(bytesPtr, length);
     const format: NativePointer = Memory.alloc(8);
     format.writeU64(0xaaaaaaaa);

@@ -56,6 +56,7 @@ const _onEnterHandler = function (symbol: string,
 	if (connectionNamePattern != '*' && connectionName && !wildcardMatch(connectionName, connectionNamePattern)) {
 		return;
 	}
+	console.log(`\n---Entry Hooked ${symbol} for connection "${connectionName}" ---`);
 
 	const ts = Date.now();  // Resolution isn't high enough, will have to use a dict of stacks in Python
 	/*
@@ -72,8 +73,10 @@ const _onEnterHandler = function (symbol: string,
 	// connectionDesc = formatConnectionDescription(connectionDesc);  // This is buggy, fix it later
 
 	const p_message = new NativePointer(args[1]);
-	let messageDesc = objcObjectDebugDesc(p_message);
 
+	let messageDesc = objcObjectDebugDesc(p_message);
+	const messageType = objcObjectDebugDesc(<NativePointer>xpcGetType.call(p_message));
+	console.log("xpc 第二个参数为：", p_message.toString(), " Type: ", messageType);
 
 	if (shouldParse) {
 		const messageType = objcObjectDebugDesc(<NativePointer>xpcGetType.call(p_message));

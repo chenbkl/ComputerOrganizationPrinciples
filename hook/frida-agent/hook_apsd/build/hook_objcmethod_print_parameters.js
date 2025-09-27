@@ -1,5 +1,5 @@
 📦
-105875 /src/hook_objcmethod_print_parameters.js
+105875 / src / hook_objcmethod_print_parameters.js
 ✄
 // node_modules/frida-objc-bridge/lib/api.js
 var cachedApi = null;
@@ -21,22 +21,22 @@ function getApi() {
     {
       module: "libobjc.A.dylib",
       functions: {
-        "objc_msgSend": function(address) {
+        "objc_msgSend": function (address) {
           this.objc_msgSend = address;
         },
-        "objc_msgSend_stret": function(address) {
+        "objc_msgSend_stret": function (address) {
           this.objc_msgSend_stret = address;
         },
-        "objc_msgSend_fpret": function(address) {
+        "objc_msgSend_fpret": function (address) {
           this.objc_msgSend_fpret = address;
         },
-        "objc_msgSendSuper": function(address) {
+        "objc_msgSendSuper": function (address) {
           this.objc_msgSendSuper = address;
         },
-        "objc_msgSendSuper_stret": function(address) {
+        "objc_msgSendSuper_stret": function (address) {
           this.objc_msgSendSuper_stret = address;
         },
-        "objc_msgSendSuper_fpret": function(address) {
+        "objc_msgSendSuper_fpret": function (address) {
           this.objc_msgSendSuper_fpret = address;
         },
         "objc_getClassList": ["int", ["pointer", "int"]],
@@ -95,24 +95,24 @@ function getApi() {
         "dispatch_async_f": ["void", ["pointer", "pointer", "pointer"]]
       },
       variables: {
-        "_dispatch_main_q": function(address) {
+        "_dispatch_main_q": function (address) {
           this._dispatch_main_q = address;
         }
       }
     }
   ];
   let remaining = 0;
-  pending.forEach(function(api2) {
+  pending.forEach(function (api2) {
     const isObjCApi = api2.module === "libobjc.A.dylib";
     const functions = api2.functions || {};
     const variables = api2.variables || {};
     const optionals = api2.optionals || {};
     remaining += Object.keys(functions).length + Object.keys(variables).length;
-    const exportByName = (Process.findModuleByName(api2.module)?.enumerateExports() ?? []).reduce(function(result, exp) {
+    const exportByName = (Process.findModuleByName(api2.module)?.enumerateExports() ?? []).reduce(function (result, exp) {
       result[exp.name] = exp;
       return result;
     }, {});
-    Object.keys(functions).forEach(function(name) {
+    Object.keys(functions).forEach(function (name) {
       const exp = exportByName[name];
       if (exp !== void 0 && exp.type === "function") {
         const signature2 = functions[name];
@@ -132,7 +132,7 @@ function getApi() {
           remaining--;
       }
     });
-    Object.keys(variables).forEach(function(name) {
+    Object.keys(variables).forEach(function (name) {
       const exp = exportByName[name];
       if (exp !== void 0 && exp.type === "variable") {
         const handler = variables[name];
@@ -540,7 +540,7 @@ function Runtime() {
       return instances;
     }
   });
-  this.schedule = function(queue, work) {
+  this.schedule = function (queue, work) {
     const id = ptr(nextId++);
     scheduledWork.set(id.toString(), work);
     if (workCallback === null) {
@@ -571,7 +571,7 @@ function Runtime() {
       throw pendingException;
     }
   }
-  this.implement = function(method2, fn) {
+  this.implement = function (method2, fn) {
     return new NativeCallback(fn, method2.returnType, method2.argumentTypes);
   };
   this.selector = selector;
@@ -666,7 +666,7 @@ function Runtime() {
       return new ObjCObject(handle2, void 0, true);
     }
     function toJSON() {
-      return Object.keys(registry).reduce(function(r, name) {
+      return Object.keys(registry).reduce(function (r, name) {
         r[name] = getClass(name).toJSON();
         return r;
       }, {});
@@ -754,7 +754,7 @@ function Runtime() {
       return new ObjCProtocol(handle2);
     }
     function toJSON() {
-      return Object.keys(registry).reduce(function(r, name) {
+      return Object.keys(registry).reduce(function (r, name) {
         r[name] = { handle: cachedProtocols[name] };
         return r;
       }, {});
@@ -836,7 +836,7 @@ function Runtime() {
               if (description !== null)
                 return description.UTF8String.bind(description);
             }
-            return function() {
+            return function () {
               return receiver.$className;
             };
           case "equals":
@@ -1012,7 +1012,7 @@ function Runtime() {
           } else {
             const methodNames = [];
             const protocolMethods = allProtocolMethods();
-            Object.keys(protocolMethods).forEach(function(methodName) {
+            Object.keys(protocolMethods).forEach(function (methodName) {
               if (methodName[0] !== "+" && methodName[0] !== "-") {
                 const details = protocolMethods[methodName];
                 if (details.implemented) {
@@ -1166,10 +1166,10 @@ function Runtime() {
         const methods = {};
         const protocols = collectProtocols(protocol);
         const defaultKind = isClass() ? "+" : "-";
-        Object.keys(protocols).forEach(function(name) {
+        Object.keys(protocols).forEach(function (name) {
           const p = protocols[name];
           const m2 = p.methods;
-          Object.keys(m2).forEach(function(fullMethodName) {
+          Object.keys(m2).forEach(function (fullMethodName) {
             const method2 = m2[fullMethodName];
             const methodName = fullMethodName.substr(2);
             const kind = fullMethodName[0];
@@ -1475,7 +1475,7 @@ function Runtime() {
         let read, write;
         if (name === "isa") {
           read = readObjectIsa;
-          write = function() {
+          write = function () {
             throw new Error("Unable to set the isa instance variable");
           };
         } else {
@@ -1500,7 +1500,7 @@ function Runtime() {
       return ivars.hasOwnProperty(name);
     }
     function toJSON() {
-      return Object.keys(self).reduce(function(result, name) {
+      return Object.keys(self).reduce(function (result, name) {
         result[name] = self[name];
         return result;
       }, {});
@@ -1591,7 +1591,7 @@ function Runtime() {
         return makeBlockInvocationWrapper(this, signature2, new NativeFunction(
           address.sign(),
           signature2.retType.type,
-          signature2.argTypes.map(function(arg) {
+          signature2.argTypes.map(function (arg) {
             return arg.type;
           }),
           this._options
@@ -1602,7 +1602,7 @@ function Runtime() {
         const callback = new NativeCallback(
           makeBlockImplementationWrapper(this, signature2, func),
           signature2.retType.type,
-          signature2.argTypes.map(function(arg) {
+          signature2.argTypes.map(function (arg) {
             return arg.type;
           })
         );
@@ -1640,7 +1640,7 @@ function Runtime() {
     acc = acc || {};
     acc[p.name] = p;
     const parentProtocols = p.protocols;
-    Object.keys(parentProtocols).forEach(function(name) {
+    Object.keys(parentProtocols).forEach(function (name) {
       collectProtocols(parentProtocols[name], acc);
     });
     return acc;
@@ -1653,7 +1653,7 @@ function Runtime() {
       Object.keys(methods).filter((m2) => /([+\-])\s(\S+)/.exec(m2) !== null).map((m2) => m2.split(" ")[1])
     );
     const proxyMethods = {
-      "- dealloc": function() {
+      "- dealloc": function () {
         const target = this.data.target;
         if ("- release" in target)
           target.release();
@@ -1663,22 +1663,22 @@ function Runtime() {
         if (callback !== void 0)
           callback.call(this);
       },
-      "- respondsToSelector:": function(sel2) {
+      "- respondsToSelector:": function (sel2) {
         const selector3 = selectorAsString(sel2);
         if (supportedSelectors.has(selector3))
           return true;
         return this.data.target.respondsToSelector_(sel2);
       },
-      "- forwardingTargetForSelector:": function(sel2) {
+      "- forwardingTargetForSelector:": function (sel2) {
         const callback = this.data.events.forward;
         if (callback !== void 0)
           callback.call(this, selectorAsString(sel2));
         return this.data.target;
       },
-      "- methodSignatureForSelector:": function(sel2) {
+      "- methodSignatureForSelector:": function (sel2) {
         return this.data.target.methodSignatureForSelector_(sel2);
       },
-      "- forwardInvocation:": function(invocation) {
+      "- forwardInvocation:": function (invocation) {
         invocation.invokeWithTarget_(this.data.target);
       }
     };
@@ -1695,7 +1695,7 @@ function Runtime() {
       protocols,
       methods: proxyMethods
     });
-    return function(target, data) {
+    return function (target, data) {
       target = target instanceof NativePointer ? new ObjCObject(target) : target;
       data = data || {};
       const instance = ProxyClass.alloc().autorelease();
@@ -1725,10 +1725,10 @@ function Runtime() {
       throw new Error("Unable to register already registered class '" + name + "'");
     const metaClassHandle = api.object_getClass(classHandle);
     try {
-      protocols.forEach(function(protocol) {
+      protocols.forEach(function (protocol) {
         api.class_addProtocol(classHandle, protocol.handle);
       });
-      Object.keys(methods).forEach(function(rawMethodName) {
+      Object.keys(methods).forEach(function (rawMethodName) {
         const match = /([+\-])\s(\S+)/.exec(rawMethodName);
         if (match === null)
           throw new Error("Invalid method name");
@@ -1767,7 +1767,7 @@ function Runtime() {
         const implementation2 = new NativeCallback(
           makeMethodImplementationWrapper(signature2, method2.implementation),
           signature2.retType.type,
-          signature2.argTypes.map(function(arg) {
+          signature2.argTypes.map(function (arg) {
             return arg.type;
           })
         );
@@ -1784,7 +1784,7 @@ function Runtime() {
     return new ObjCObject(classHandle);
   }
   function makeClassDestructor(classHandle) {
-    return function() {
+    return function () {
       api.objc_disposeClassPair(classHandle);
     };
   }
@@ -1794,11 +1794,11 @@ function Runtime() {
       name = makeProtocolName();
     const protocols = properties.protocols || [];
     const methods = properties.methods || {};
-    protocols.forEach(function(protocol) {
+    protocols.forEach(function (protocol) {
       if (!(protocol instanceof ObjCProtocol))
         throw new Error("Expected protocol");
     });
-    const methodSpecs = Object.keys(methods).map(function(rawMethodName) {
+    const methodSpecs = Object.keys(methods).map(function (rawMethodName) {
       const method2 = methods[rawMethodName];
       const match = /([+\-])\s(\S+)/.exec(rawMethodName);
       if (match === null)
@@ -1819,10 +1819,10 @@ function Runtime() {
     const handle2 = api.objc_allocateProtocol(Memory.allocUtf8String(name));
     if (handle2.isNull())
       throw new Error("Unable to register already registered protocol '" + name + "'");
-    protocols.forEach(function(protocol) {
+    protocols.forEach(function (protocol) {
       api.protocol_addProtocol(handle2, protocol.handle);
     });
-    methodSpecs.forEach(function(spec) {
+    methodSpecs.forEach(function (spec) {
       const isRequiredMethod = spec.optional ? 0 : 1;
       const isInstanceMethod = spec.kind === "-" ? 1 : 0;
       api.protocol_addMethodDescription(handle2, selector(spec.name), Memory.allocUtf8String(spec.types), isRequiredMethod, isInstanceMethod);
@@ -1961,13 +1961,13 @@ function Runtime() {
     const retType = signature.retType;
     const argTypes = signature.argTypes.slice(2);
     const objc_msgSend = superSpecifier ? getMsgSendSuperImpl(signature, invocationOptions) : getMsgSendImpl(signature, invocationOptions);
-    const argVariableNames = argTypes.map(function(t, i) {
+    const argVariableNames = argTypes.map(function (t, i) {
       return "a" + (i + 1);
     });
     const callArgs = [
       superSpecifier ? "superSpecifier" : "this",
       "sel"
-    ].concat(argTypes.map(function(t, i) {
+    ].concat(argTypes.map(function (t, i) {
       if (t.toNative) {
         return "argTypes[" + i + "].toNative.call(this, " + argVariableNames[i] + ")";
       }
@@ -2014,7 +2014,7 @@ function Runtime() {
         return `${method.kind}[${owner.$className} ${selectorAsString(sel)}]`;
       }
     });
-    m.clone = function(options) {
+    m.clone = function (options) {
       return makeMethodInvocationWrapper(method, owner, superSpecifier, options);
     };
     function getMethodHandle() {
@@ -2048,7 +2048,7 @@ function Runtime() {
   function makeMethodImplementationWrapper(signature, implementation) {
     const retType = signature.retType;
     const argTypes = signature.argTypes;
-    const argVariableNames = argTypes.map(function(t, i) {
+    const argVariableNames = argTypes.map(function (t, i) {
       if (i === 0)
         return "handle";
       else if (i === 1)
@@ -2056,7 +2056,7 @@ function Runtime() {
       else
         return "a" + (i - 1);
     });
-    const callArgs = argTypes.slice(2).map(function(t, i) {
+    const callArgs = argTypes.slice(2).map(function (t, i) {
       const argVariableName = argVariableNames[2 + i];
       if (t.fromNative) {
         return "argTypes[" + (2 + i) + "].fromNative.call(self, " + argVariableName + ")";
@@ -2081,10 +2081,10 @@ function Runtime() {
   function makeBlockInvocationWrapper(block, signature, implementation) {
     const retType = signature.retType;
     const argTypes = signature.argTypes.slice(1);
-    const argVariableNames = argTypes.map(function(t, i) {
+    const argVariableNames = argTypes.map(function (t, i) {
       return "a" + (i + 1);
     });
-    const callArgs = argTypes.map(function(t, i) {
+    const callArgs = argTypes.map(function (t, i) {
       if (t.toNative) {
         return "argTypes[" + i + "].toNative.call(this, " + argVariableNames[i] + ")";
       }
@@ -2108,13 +2108,13 @@ function Runtime() {
   function makeBlockImplementationWrapper(block, signature, implementation) {
     const retType = signature.retType;
     const argTypes = signature.argTypes;
-    const argVariableNames = argTypes.map(function(t, i) {
+    const argVariableNames = argTypes.map(function (t, i) {
       if (i === 0)
         return "handle";
       else
         return "a" + i;
     });
-    const callArgs = argTypes.slice(1).map(function(t, i) {
+    const callArgs = argTypes.slice(1).map(function (t, i) {
       const argVariableName = argVariableNames[1 + i];
       if (t.fromNative) {
         return "argTypes[" + (1 + i) + "].fromNative.call(this, " + argVariableName + ")";
@@ -2171,11 +2171,11 @@ function Runtime() {
   const rawMask = isaMasks[Process.arch];
   if (rawMask !== void 0) {
     const mask = ptr(rawMask);
-    readObjectIsa = function(p) {
+    readObjectIsa = function (p) {
       return p.readPointer().and(mask);
     };
   } else {
-    readObjectIsa = function(p) {
+    readObjectIsa = function (p) {
       return p.readPointer();
     };
   }
@@ -2198,7 +2198,7 @@ function Runtime() {
   }
   function makeMsgSendImpl(signature2, invocationOptions2, isSuper) {
     const retType2 = signature2.retType.type;
-    const argTypes2 = signature2.argTypes.map(function(t) {
+    const argTypes2 = signature2.argTypes.map(function (t) {
       return t.type;
     });
     const components = ["objc_msgSend"];
@@ -2450,7 +2450,7 @@ function Runtime() {
       throw new Error("No known encoding for type " + alias);
     return id;
   }
-  const fromNativeId = function(h) {
+  const fromNativeId = function (h) {
     if (h.isNull()) {
       return null;
     } else if (h.toString(16) === this.handle.toString(16)) {
@@ -2459,7 +2459,7 @@ function Runtime() {
       return new ObjCObject(h);
     }
   };
-  const toNativeId = function(v) {
+  const toNativeId = function (v) {
     if (v === null)
       return NULL;
     const type = typeof v;
@@ -2478,7 +2478,7 @@ function Runtime() {
     }
     return v;
   };
-  const fromNativeBlock = function(h) {
+  const fromNativeBlock = function (h) {
     if (h.isNull()) {
       return null;
     } else if (h.toString(16) === this.handle.toString(16)) {
@@ -2487,10 +2487,10 @@ function Runtime() {
       return new Block(h);
     }
   };
-  const toNativeBlock = function(v) {
+  const toNativeBlock = function (v) {
     return v !== null ? v : NULL;
   };
-  const toNativeObjectArray = function(v) {
+  const toNativeObjectArray = function (v) {
     if (v instanceof Array) {
       const length = v.length;
       const array = Memory.alloc(length * pointerSize);
@@ -2521,41 +2521,41 @@ function Runtime() {
   }
   function structType(fieldTypes) {
     let fromNative, toNative;
-    if (fieldTypes.some(function(t) {
+    if (fieldTypes.some(function (t) {
       return !!t.fromNative;
     })) {
-      const fromTransforms = fieldTypes.map(function(t) {
+      const fromTransforms = fieldTypes.map(function (t) {
         if (t.fromNative)
           return t.fromNative;
         else
           return identityTransform;
       });
-      fromNative = function(v) {
-        return v.map(function(e, i) {
+      fromNative = function (v) {
+        return v.map(function (e, i) {
           return fromTransforms[i].call(this, e);
         });
       };
     } else {
       fromNative = identityTransform;
     }
-    if (fieldTypes.some(function(t) {
+    if (fieldTypes.some(function (t) {
       return !!t.toNative;
     })) {
-      const toTransforms = fieldTypes.map(function(t) {
+      const toTransforms = fieldTypes.map(function (t) {
         if (t.toNative)
           return t.toNative;
         else
           return identityTransform;
       });
-      toNative = function(v) {
-        return v.map(function(e, i) {
+      toNative = function (v) {
+        return v.map(function (e, i) {
           return toTransforms[i].call(this, e);
         });
       };
     } else {
       toNative = identityTransform;
     }
-    const [totalSize, fieldOffsets] = fieldTypes.reduce(function(result, t) {
+    const [totalSize, fieldOffsets] = fieldTypes.reduce(function (result, t) {
       const [previousOffset, offsets] = result;
       const { size } = t;
       const offset = align(previousOffset, size);
@@ -2578,7 +2578,7 @@ function Runtime() {
     };
   }
   function unionType(fieldTypes) {
-    const largestType = fieldTypes.reduce(function(largest, t) {
+    const largestType = fieldTypes.reduce(function (largest, t) {
       if (t.size > largest.size)
         return t;
       else
@@ -2587,21 +2587,21 @@ function Runtime() {
     let fromNative, toNative;
     if (largestType.fromNative) {
       const fromTransform = largestType.fromNative;
-      fromNative = function(v) {
+      fromNative = function (v) {
         return fromTransform.call(this, v[0]);
       };
     } else {
-      fromNative = function(v) {
+      fromNative = function (v) {
         return v[0];
       };
     }
     if (largestType.toNative) {
       const toTransform = largestType.toNative;
-      toNative = function(v) {
+      toNative = function (v) {
         return [toTransform.call(this, v)];
       };
     } else {
-      toNative = function(v) {
+      toNative = function (v) {
         return [v];
       };
     }
@@ -3025,8 +3025,8 @@ function parseObjCTypes(types2) {
 }
 
 // src/hook_objcmethod_print_parameters.ts
-var class_name = "APSCourier";
-var selector2 = "- _sendOutgoingMessage:";
+var class_name = "UIControl";
+var selector2 = "- sendAction:to:forEvent:";
 if (!frida_objc_bridge_default.available) {
   console.log("[-] ObjC runtime \u4E0D\u53EF\u7528\uFF0C\u672C\u811A\u672C\u9762\u5411 iOS/macOS\u3002");
   throw new Error("ObjC runtime \u4E0D\u53EF\u7528");

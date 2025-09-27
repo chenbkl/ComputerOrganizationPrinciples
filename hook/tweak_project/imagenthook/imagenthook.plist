@@ -1,0 +1,8 @@
+{
+	Filter = {
+		Executables = (
+			identityservicesd,
+			imagent,
+		);
+	};
+}
