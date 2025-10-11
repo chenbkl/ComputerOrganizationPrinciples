@@ -31,8 +31,7 @@
 
 
 - (IBAction)click:(id)sender {
-//    CBViewController *vc = [[CBViewController alloc]init];
-//    [self.navigationController pushViewController:vc animated:YES];
+//    CBViewControlle nController pushViewController:vc animated:YES];
     dispatch_async(dispatch_get_main_queue(), ^{
         NSLog(@"GCD BLOCK");
     });
