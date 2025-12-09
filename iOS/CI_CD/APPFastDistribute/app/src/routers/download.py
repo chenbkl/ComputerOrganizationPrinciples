@@ -18,7 +18,7 @@ def install_page(
     version: str
 ):
     # 拼接 plist 路径
-    plist_url = f"http://{SERVER_HOST}:{SERVER_PORT}/deb_ipa/{date}/{env}/{version}/{time}/{ipa_name}.plist"
+    plist_url = f"https://{SERVER_HOST}:{SERVER_PORT}/deb_ipa/{date}/{env}/{version}/{time}/{ipa_name}.plist"
     icon_url = "/images/debicon-"+env+".png"
 
     return TEMPLATES.TemplateResponse("install.html", {

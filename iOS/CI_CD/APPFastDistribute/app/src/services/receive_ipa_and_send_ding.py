@@ -61,7 +61,7 @@ def save_ipa_and_log_and_get_html_path(env, ipa_file_path, log_file_path, versio
     # 删除字符串中的点后缀
     ipa_name = ipa_filename.split('.')[0]
     # 拼接 HTML 安装页 URL
-    html_url = f"http://{SERVER_HOST}:{SERVER_PORT}/install/{ipa_name}/{date_str}/{seq_str}/{env}/{version.replace('.', '_')}"
+    html_url = f"https://{SERVER_HOST}:{SERVER_PORT}/install/{ipa_name}/{date_str}/{seq_str}/{env}/{version.replace('.', '_')}"
     return html_url
 
 
@@ -129,7 +129,7 @@ def generate_plist(env, bundle_id, version, ipa_url, save_path):
 
 # 写一个函数，用来获取url基础路径，方便后续和文件夹路径拼接
 def get_base_url():
-    return f"http://{SERVER_HOST}:{SERVER_PORT}/deb_ipa"
+    return f"https://{SERVER_HOST}:{SERVER_PORT}/deb_ipa"
 
 # 写一个函数，入参file_path是ipa/plist在服务器的完整的文件路径，函数内部的功能是，需要替换掉多余路径前缀，然后拼接上基础url，返回可供外部访问的完整的url路径，注意路径中重叠的部分
 def get_full_file_url(file_local_path):

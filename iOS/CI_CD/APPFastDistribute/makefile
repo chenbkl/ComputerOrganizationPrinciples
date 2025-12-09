@@ -1,6 +1,6 @@
 IMAGE_NAME=iosappdelivery
 # 手动指定版本
-VERSION=1.0.0
+VERSION=1.0.5
 COMPOSE_FILE=docker-compose.test.yml
 IMAGE_FILE=$(IMAGE_NAME)_$(VERSION).tar
 x86_PLATFORM=linux/amd64   # 强制构建 amd64 架构，兼容服务器
